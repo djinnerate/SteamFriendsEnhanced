@@ -1,0 +1,25 @@
+/* Blocked Reason banner above the profile header actions */
+.sfe_block_reason {
+    margin: 0 0 8px;
+    padding: 6px 10px;
+    background: rgba(201, 76, 76, 0.18);
+    border-left: 3px solid #c94c4c;
+    color: #e0e0e0;
+    font-size: 13px;
+    line-height: 18px;
+}
+.sfe_block_reason_title { color: #ff8a8a; font-weight: bold; }
+.sfe_block_reason_text { word-break: break-word; }
+.sfe_block_reason_edit { margin-left: 8px; font-size: 11px; color: #8f98a0; }
+.sfe_block_reason_edit:hover { color: #fff; }
+
+/* Block reason picker inside Steam's confirm dialog */
+.sfe_block_reason_label { margin: 12px 0 6px; }
+.sfe_block_reason_options { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-bottom: 8px; }
+.sfe_block_reason_option { cursor: pointer; white-space: nowrap; }
+.sfe_block_reason_other { width: 100%; box-sizing: border-box; }
+.sfe_block_reason_other:disabled { opacity: 0.4; }
+
+/* Mutual Friends in Common */
+.sfe_mfic_status { font-size: 11px; color: #8f98a0; }
+.sfe_mfic_note { margin-bottom: 8px; font-size: 11px; color: #8f98a0; }

@@ -1,0 +1,36 @@
+body {
+  width: 340px;
+  margin: 0;
+  padding: 12px;
+  font: 13px "Motiva Sans", Arial, sans-serif;
+  background: #1b2838;
+  color: #c7d5e0;
+}
+h1 { font-size: 15px; margin: 0 0 4px; color: #fff; }
+.hint { margin: 0 0 10px; font-size: 11px; color: #8f98a0; }
+ul { list-style: none; margin: 0; padding: 0; max-height: 400px; overflow-y: auto; }
+li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  margin-bottom: 4px;
+  background: #2a475e;
+  border-radius: 3px;
+}
+.names { flex: 1; min-width: 0; }
+.names a { color: #66c0f4; text-decoration: none; font-weight: bold; }
+.names a:hover { text-decoration: underline; }
+.persona { display: block; font-size: 11px; color: #8f98a0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+button {
+  background: #3d4450;
+  color: #c7d5e0;
+  border: none;
+  border-radius: 2px;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+button:hover { background: #c94c4c; color: #fff; }
+h1:not(:first-child) { margin-top: 16px; }
+.empty { margin: 0 0 8px; color: #8f98a0; }
+.reason { color: #ff8a8a; }

@@ -1,6 +1,20 @@
+<!DOCTYPE html>
 <html>
+  <head>
+    <meta charset="utf-8">
+    <title>Steam Friends Enhanced</title>
+    <link rel="stylesheet" href="popup/popup.css">
+  </head>
   <body>
-    <h1>Hello Extensions</h1>
-    <script src="/popup/popup.js"></script>
+    <h1>Saved Nicknames</h1>
+    <p class="hint">Backed up in this browser and re-applied when you visit a profile whose nickname Steam has cleared.</p>
+    <p id="nicknames-empty" class="empty" hidden>No nicknames saved yet. Use <b>Add Nickname</b> in a profile's "More" menu.</p>
+    <ul id="nicknames"></ul>
+
+    <h1>Blocked Users</h1>
+    <p class="hint">Reasons recorded when blocking. Shown on the blocked user's profile.</p>
+    <p id="blocked-empty" class="empty" hidden>No block reasons recorded.</p>
+    <ul id="blocked"></ul>
+    <script src="popup/popup.js"></script>
   </body>
 </html>
