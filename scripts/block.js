@@ -25,11 +25,54 @@ function getBlockState() {
     return 'unknown';
 }
 
-// Called by page-bridge.js after its ConfirmBlock() replacement has blocked the user
-contentHandlers.saveBlockReason = async ({ steamId, personaName, category, reason }) => {
-    const { profileUrl } = getProfileInfo();
-    await saveBlockReason(steamId, { category, reason, personaName, profileUrl, blockedAt: Date.now() });
-};
+// Replaces Steam's ConfirmBlock() flow with one that also asks for a reason.
+async function blockWithReason() {
+    const { steamId, profileUrl, personaName } = getProfileInfo();
+    if (!steamId) return;
+
+    const title = 'Block All Communication';
+    const choice = await callPage('blockReasonDialog', {
+        title,
+        description: `You are about to block all communication with ${personaName}.`,
+        okText: 'Yes, block them'
+    });
+    if (!choice) return;
+
+    // Saved before blocking so the reason survives even if the page is closed or reloaded mid-request
+    if (choice.category) {
+        await saveBlockReason(steamId, { category: choice.category, reason: choice.reason, personaName, profileUrl, blockedAt: Date.now() });
+    }
+
+    try {
+        await setSteamBlocked(steamId, true);
+    } catch (err) {
+        console.error('[SteamFriendsEnhanced] Block failed:', err);
+        if (choice.category) await removeBlockReason(steamId);
+        await callPage('alert', { title, message: 'Error processing your request. Please try again.' });
+        return;
+    }
+
+    await callPage('alert', { title, message: 'You have blocked all communications with this player.' });
+    // Steam renders the blocked state server-side, so reload like its own ConfirmBlock() does
+    location.reload();
+}
+
+// Catch the "Block All Communication" menu item before Steam's own handler runs.
+// Capturing at the document fires ahead of the link's inline onclick, and preventDefault stops its javascript: href.
+function interceptBlockLinks() {
+    document.addEventListener('click', (e) => {
+        const link = e.target.closest?.('a[href*="ConfirmBlock"], [onclick*="ConfirmBlock"]');
+        if (!link) return;
+        e.preventDefault();
+        e.stopImmediatePropagation();
+
+        const dropdown = document.getElementById('profile_action_dropdown');
+        if (dropdown) dropdown.style.display = 'none';
+        document.getElementById('profile_action_dropdown_link')?.classList.remove('focus');
+
+        blockWithReason().catch(err => console.error('[SteamFriendsEnhanced] Block failed:', err));
+    }, true);
+}
 
 async function renderBlockReason() {
     const { steamId, profileUrl, personaName } = getProfileInfo();
@@ -64,7 +107,12 @@ async function renderBlockReason() {
     edit.textContent = saved ? 'Edit' : 'Add reason';
     edit.onclick = async (e) => {
         e.preventDefault();
-        const choice = await callPage('editBlockReason', { personaName, current: saved ?? null });
+        const choice = await callPage('blockReasonDialog', {
+            title: 'Block Reason',
+            description: `Why did you block ${personaName}?`,
+            okText: 'Save',
+            current: saved ?? null
+        });
         if (!choice) return;
         if (choice.category) {
             await saveBlockReason(steamId, { category: choice.category, reason: choice.reason, personaName, profileUrl });
@@ -85,4 +133,5 @@ async function renderBlockReason() {
     }
 }
 
+interceptBlockLinks();
 renderBlockReason();

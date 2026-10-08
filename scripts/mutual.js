@@ -86,10 +86,22 @@ async function onMutualClick(steamId) {
 
     if (job?.status === 'done') {
         const accountIds = Object.keys(job.results).map(Number);
+
+        // Look up current names for the friends of yours that connect you to each person
+        let names = new Map();
+        try {
+            names = await fetchFriendNames(getMySteamId());
+        } catch (err) {
+            console.warn('[SteamFriendsEnhanced] Could not load friend names:', err);
+        }
+        const via = Object.fromEntries(Object.entries(job.results).map(([accountId, viaIds]) =>
+            [accountId, viaIds.map(id => names.get(id) ?? `[U:1:${id}]`)]));
+
         const privateNote = job.privateCount ? ` ${job.privateCount} of ${job.checked} friend lists were private and could not be checked.` : '';
         const action = await callPage('showPlayerList', {
             title: 'Mutual Friends in Common',
             accountIds,
+            via,
             note: `Generated ${new Date(job.finishedAt).toLocaleString()}.${privateNote}`
         });
         if (action === 'rescan') await startMutualScan(steamId, { fresh: true });

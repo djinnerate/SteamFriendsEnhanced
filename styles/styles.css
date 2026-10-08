@@ -23,3 +23,4 @@
 /* Mutual Friends in Common */
 .sfe_mfic_status { font-size: 11px; color: #8f98a0; }
 .sfe_mfic_note { margin-bottom: 8px; font-size: 11px; color: #8f98a0; }
+.sfe_mfic_via { font-size: 11px; color: #8f98a0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

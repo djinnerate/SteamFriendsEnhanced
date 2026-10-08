@@ -159,47 +159,61 @@ function parseFriendAccountIds(html) {
     return [...new Set(ids)];
 }
 
-async function fetchFriendAccountIds(steamId64) {
+async function fetchFriendsPage(steamId64) {
     const response = await pageFetch(`https://steamcommunity.com/profiles/${steamId64}/friends/`, { credentials: 'include' });
     if (!response.ok) throw new Error(`Steam returned HTTP ${response.status}`);
-    return parseFriendAccountIds(await response.text());
+    return response.text();
+}
+
+async function fetchFriendAccountIds(steamId64) {
+    return parseFriendAccountIds(await fetchFriendsPage(steamId64));
+}
+
+// Map of accountid -> persona name from a /friends/ page (<div id="fr_<accountid>"> ... <div class="friend_block_content">Name<br>).
+async function fetchFriendNames(steamId64) {
+    const doc = new DOMParser().parseFromString(await fetchFriendsPage(steamId64), 'text/html');
+    const names = new Map();
+    for (const block of doc.querySelectorAll('[id^="fr_"]')) {
+        const name = block.querySelector('.friend_block_content')?.firstChild?.textContent.trim();
+        if (name) names.set(Number(block.id.slice(3)), name);
+    }
+    return names;
+}
+
+// Same request Steam's ConfirmBlock()/ConfirmUnblock() make.
+async function setSteamBlocked(steamId, block) {
+    const sessionId = getSessionId();
+    if (!sessionId) throw new Error('Could not find a Steam session. Are you logged in?');
+
+    const response = await pageFetch('https://steamcommunity.com/actions/BlockUserAjax', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+        },
+        body: new URLSearchParams({ sessionID: sessionId, steamid: steamId, block: block ? '1' : '0' })
+    });
+    if (!response.ok) throw new Error(`Steam returned HTTP ${response.status}`);
 }
 
 // --- Bridge to scripts/page-bridge.js, which runs in the page's world and can use Steam's own dialogs ---
 
 const pageCalls = new Map();
-const contentHandlers = {};
 let nextPageCallId = 1;
-
-function postToPage(msg) {
-    window.postMessage({ sfeBridge: 'to-page', ...msg }, window.location.origin);
-}
 
 function callPage(type, payload) {
     const id = 'content-' + nextPageCallId++;
     return new Promise((resolve, reject) => {
         pageCalls.set(id, { resolve, reject });
-        postToPage({ id, type, payload });
+        window.postMessage({ sfeBridge: 'to-page', id, type, payload }, window.location.origin);
     });
 }
 
-window.addEventListener('message', async (event) => {
+window.addEventListener('message', (event) => {
     if (event.source !== window || event.data?.sfeBridge !== 'to-content') return;
-    const { id, type, payload, replyTo, result, error } = event.data;
-
-    if (replyTo) {
-        const call = pageCalls.get(replyTo);
-        if (!call) return;
-        pageCalls.delete(replyTo);
-        error ? call.reject(new Error(error)) : call.resolve(result);
-        return;
-    }
-
-    const handler = contentHandlers[type];
-    if (!handler) return;
-    try {
-        postToPage({ replyTo: id, result: await handler(payload) });
-    } catch (err) {
-        postToPage({ replyTo: id, error: String(err?.message ?? err) });
-    }
+    const { replyTo, result, error } = event.data;
+    const call = pageCalls.get(replyTo);
+    if (!call) return;
+    pageCalls.delete(replyTo);
+    error ? call.reject(new Error(error)) : call.resolve(result);
 });

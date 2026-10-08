@@ -12,13 +12,14 @@ Additionally, there will be an attempt at an additional drop down similar to an 
 - **Mutual Friends in Common** link under Friends in Common: people on the profile's friends list who are friends with at least one of
   your friends (excluding your own friends, who already appear under Friends in Common). The scan loads one friends list per person checked,
   spaced 1.5s apart to stay under Steam's rate limits. It runs in the background, survives the worker restarting, and sends a notification
-  (and an in-page alert if the profile is open) when done. The result opens in Steam's own player-list dialog. Only one scan runs at a time.
+  (and an in-page alert if the profile is open) when done. The result opens in Steam's own player-list dialog, with the friends of yours who connect you to each person listed under their name. Only one scan runs at a time.
 - **Block reasons:** blocking from a profile's menu asks for a reason (Cheater, Scammer, Phisher, Stalker or Other with your own text).
   The reason is shown above the profile's header actions while the user is blocked, can be edited there, and is forgotten when they're unblocked.
 - Toolbar popup lists saved nicknames and block reasons. **Remove** forgets the local record only. To clear a nickname on Steam too, save an empty nickname from the profile.
 
-`scripts/page-bridge.js` runs in the page's own JavaScript world (`"world": "MAIN"`) so it can use Steam's dialogs and replace its
-`ConfirmBlock()`. It talks to the other content scripts through `window.postMessage` (`callPage()` in `scripts/common.js`).
+`scripts/page-bridge.js` runs in the page's own JavaScript world (`"world": "MAIN"`) so it can use Steam's dialogs. The other
+content scripts call it through `window.postMessage` (`callPage()` in `scripts/common.js`); it only ever replies. `scripts/block.js`
+intercepts the Block menu item's click itself rather than overriding Steam's `ConfirmBlock()`.
 
 ## Installing (development)
 
