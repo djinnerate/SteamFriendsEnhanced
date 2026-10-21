@@ -1,37 +1,58 @@
 {
-    "manifest_version": 3,
-    "name": "Steam Friends Enhanced",
-    "description": "Add Visual Enhancements to Steam Profiles to allow for Non Friend Nicknames and Alt Account Displays",
-    "version": "1.0",
-    "action": {
-      "default_popup": "index.html",
-      "default_icon": "/images/steam.png"
+  "manifest_version": 3,
+  "name": "Steam Friends Enhanced",
+  "description": "Add Visual Enhancements to Steam Profiles to allow for Non Friend Nicknames and Alt Account Displays",
+  "version": "1.2.0",
+  "minimum_chrome_version": "111",
+  "permissions": [
+    "storage",
+    "notifications"
+  ],
+  "host_permissions": [
+    "https://steamcommunity.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "Steam Friends Enhanced",
+    "default_popup": "index.html",
+    "default_icon": "images/steam.png"
+  },
+  "icons": {
+    "16": "images/steam.png",
+    "32": "images/steam.png",
+    "48": "images/steam.png",
+    "128": "images/steam.png"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://steamcommunity.com/id/*",
+        "https://steamcommunity.com/profiles/*"
+      ],
+      "css": [
+        "styles/styles.css"
+      ],
+      "js": [
+        "scripts/common.js",
+        "scripts/modal.js",
+        "scripts/nickname.js",
+        "scripts/block.js",
+        "scripts/mutual.js"
+      ],
+      "run_at": "document_idle"
     },
-    "icons": {
-        "16": "/images/steam.png",
-        "32": "/images/steam.png",
-        "48": "/images/steam.png",
-        "128": "/images/steam.png"
-    },
-    "web_accessible_resources": [
-      {
-        "resources": ["scripts/nickname.js", "scripts/modal.js", "styles/styles.css"],
-        "matches": ["https://*.steamcommunity.com/*"]
-      }
-    ],
-    "content_scripts": [
-        {
-          "css": [
-              "styles/styles.css"
-          ],
-          "js": [
-              "scripts/nickname.js",
-              "scripts/modal.js"
-          ],
-          "matches": [
-          "https://steamcommunity.com/id/*",
-          "http://steamcommunity.com/id/*"
-          ]
-        }
-    ]
-  }
+    {
+      "matches": [
+        "https://steamcommunity.com/id/*",
+        "https://steamcommunity.com/profiles/*"
+      ],
+      "js": [
+        "scripts/page-bridge.js"
+      ],
+      "run_at": "document_idle",
+      "world": "MAIN"
+    }
+  ]
+}
